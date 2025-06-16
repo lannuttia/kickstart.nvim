@@ -483,6 +483,7 @@ require('lazy').setup({
       -- Mason must be loaded before its dependents so we need to set it up here.
       -- NOTE: `opts = {}` is the same as calling `require('mason').setup({})`
       { 'mason-org/mason.nvim', opts = {} },
+      'towolf/vim-helm',
       'mason-org/mason-lspconfig.nvim',
       'WhoIsSethDaniel/mason-tool-installer.nvim',
 
@@ -695,6 +696,30 @@ require('lazy').setup({
               },
               -- You can toggle below to ignore Lua_LS's noisy `missing-fields` warnings
               -- diagnostics = { disable = { 'missing-fields' } },
+            },
+          },
+        },
+        yamlls = {
+          root_dir = function(fname)
+            local util = require 'lspconfig.util'
+
+            local is_helm_template = vim.fn.filereadable(util.root_pattern 'Chart.yaml'(fname)) == 1 and vim.api.nvim_buf_get_name(0):match '/templates/'
+
+            if is_helm_template then
+              return nil
+            end
+
+            return util.root_patt('.git', 'lua')(fname)
+          end,
+
+          -- This is the schema configuration from before
+          settings = {
+            yaml = {
+              schemas = {
+                kubernetes = '/*.yaml',
+                ['https://json.schemastore.org/chart.json'] = 'Chart.yaml',
+                ['./values.schema.json'] = 'values.yaml',
+              },
             },
           },
         },
@@ -946,7 +971,7 @@ require('lazy').setup({
     main = 'nvim-treesitter.configs', -- Sets main module to use for opts
     -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
     opts = {
-      ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc' },
+      ensure_installed = { 'bash', 'c', 'diff', 'helm', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc', 'yaml' },
       -- Autoinstall languages that are not installed
       auto_install = true,
       highlight = {
