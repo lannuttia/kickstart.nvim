@@ -690,6 +690,23 @@ require('lazy').setup({
         -- ts_ls = {},
         --
 
+        ltex = {
+          filetypes = { 'tex' },
+          settings = {
+            ltex = {
+              language = 'auto', -- Or specify a language like "en-US", "fr", etc.
+              diagnosticSeverity = 'information',
+              checkFrequency = 'save',
+              sentenceCacheSize = 2000,
+              -- Add other ltex-ls-plus specific settings as needed from its documentation
+              -- For example:
+              -- additionalRules = { enablePickyRules = true },
+              -- disabledRules = {
+              --   en = { "DASH_RULE", "TWO_HYPHENS" },
+              -- },
+            },
+          },
+        },
         lua_ls = {
           -- cmd = { ... },
           -- filetypes = { ... },
@@ -1030,6 +1047,18 @@ require('lazy').setup({
     keys = { -- load the plugin only when using it's keybinding:
       { '<leader>u', "<cmd>lua require('undotree').toggle()<cr>" },
     },
+  },
+  {
+    'xuhdev/vim-latex-live-preview',
+    build = 'npm install -g neovim', -- This is often needed for some features
+    ft = { 'tex' }, -- Only load for LaTeX files
+    cmd = { 'LatexLivePreview', 'LatexLivePreviewStop' }, -- Commands it provides
+    init = function()
+      vim.g.livepreview_previewer = 'zathura'
+    end,
+    config = function()
+      vim.api.nvim_set_keymap('n', '<leader>lp', ':LLPStartPreview<CR>', { noremap = true, silent = true, desc = 'Start LaTeX Live Preview' })
+    end,
   },
 }, {
   ui = {
