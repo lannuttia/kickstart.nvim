@@ -1024,6 +1024,14 @@ require('lazy').setup({
   -- Or use telescope!
   -- In normal mode type `<space>sh` then write `lazy.nvim-plugin`
   -- you can continue same window with `<space>sr` which resumes last telescope search
+  {
+    'jiaoshijie/undotree',
+    dependencies = 'nvim-lua/plenary.nvim',
+    config = true,
+    keys = { -- load the plugin only when using it's keybinding:
+      { '<leader>u', "<cmd>lua require('undotree').toggle()<cr>" },
+    },
+  },
 }, {
   ui = {
     -- If you are using a Nerd Font: set icons to an empty table which will use the
