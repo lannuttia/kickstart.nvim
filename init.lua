@@ -726,7 +726,6 @@ require('lazy').setup({
             json = {
               schemas = require('schemastore').json.schemas(),
               validate = { enable = true },
-              format = { enable = true },
             },
           },
         },
@@ -741,6 +740,12 @@ require('lazy').setup({
               completion = true,
               schemas = require('schemastore').yaml.schemas(),
             },
+          },
+        },
+        taplo = {
+          settings = {
+            schemas = require('schemastore').json.schemas(),
+            validate = { enable = true },
           },
         },
       }
@@ -1034,32 +1039,12 @@ require('lazy').setup({
   --    This is the easiest way to modularize your config.
   --
   --  Uncomment the following line and add your plugins to `lua/custom/plugins/*.lua` to get going.
-  -- { import = 'custom.plugins' },
+  { import = 'custom.plugins' },
   --
   -- For additional information with loading, sourcing and examples see `:help lazy.nvim-🔌-plugin-spec`
   -- Or use telescope!
   -- In normal mode type `<space>sh` then write `lazy.nvim-plugin`
   -- you can continue same window with `<space>sr` which resumes last telescope search
-  {
-    'jiaoshijie/undotree',
-    dependencies = 'nvim-lua/plenary.nvim',
-    config = true,
-    keys = { -- load the plugin only when using it's keybinding:
-      { '<leader>u', "<cmd>lua require('undotree').toggle()<cr>" },
-    },
-  },
-  {
-    'xuhdev/vim-latex-live-preview',
-    build = 'npm install -g neovim', -- This is often needed for some features
-    ft = { 'tex' }, -- Only load for LaTeX files
-    cmd = { 'LatexLivePreview', 'LatexLivePreviewStop' }, -- Commands it provides
-    init = function()
-      vim.g.livepreview_previewer = 'zathura'
-    end,
-    config = function()
-      vim.api.nvim_set_keymap('n', '<leader>lp', ':LLPStartPreview<CR>', { noremap = true, silent = true, desc = 'Start LaTeX Live Preview' })
-    end,
-  },
 }, {
   ui = {
     -- If you are using a Nerd Font: set icons to an empty table which will use the
