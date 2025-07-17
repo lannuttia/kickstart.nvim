@@ -4,7 +4,6 @@
 -- See the kickstart.nvim README for more information
 return {
   require 'custom.plugins.avante',
-  require 'custom.plugins.catppuccin',
   require 'custom.plugins.undotree',
   require 'custom.plugins.latex-live-preview',
 }
