@@ -5,6 +5,7 @@ return {
   cmd = { 'LatexLivePreview', 'LatexLivePreviewStop' }, -- Commands it provides
   init = function()
     vim.g.livepreview_previewer = 'zathura'
+    vim.g.livepreview_engine = 'lualatex' .. ' -shell-escape'
   end,
   config = function()
     vim.api.nvim_set_keymap('n', '<leader>lp', ':LLPStartPreview<CR>', { noremap = true, silent = true, desc = 'Start LaTeX Live Preview' })
