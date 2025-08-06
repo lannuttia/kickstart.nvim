@@ -7,7 +7,6 @@
 -- kickstart.nvim and not kitchen-sink.nvim ;)
 
 return {
-  -- NOTE: Yes, you can install new plugins here!
   'mfussenegger/nvim-dap',
   -- NOTE: And you can specify dependencies as well
   dependencies = {
@@ -23,6 +22,7 @@ return {
 
     -- Add your own debuggers here
     'leoluz/nvim-dap-go',
+    'mfussenegger/nvim-dap-python',
   },
   keys = {
     -- Basic debugging keymaps, feel free to change to your liking!
@@ -95,6 +95,8 @@ return {
       ensure_installed = {
         -- Update this to ensure that you have the debuggers for the langs you want
         'delve',
+        'java-debug-adapter',
+        'debugpy',
       },
     }
 
@@ -144,5 +146,12 @@ return {
         detached = vim.fn.has 'win32' == 0,
       },
     }
+
+    -- Install python specific config
+    local python_interpreter = 'python3'
+    if vim.env.VIRTUAL_ENV then
+      python_interpreter = vim.env.VIRTUAL_ENV .. '/bin/python'
+    end
+    require('dap-python').setup(python_interpreter)
   end,
 }
