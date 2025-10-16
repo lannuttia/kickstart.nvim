@@ -770,6 +770,10 @@ require('lazy').setup({
         'pyright',
         'isort',
         'black',
+        'jdtls', -- Java Language Server
+        'java-debug-adapter', -- Java Debug Adapter
+        'java-test', -- Java Test Runner
+        'lemminx',
       })
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
@@ -823,6 +827,8 @@ require('lazy').setup({
       formatters_by_ft = {
         lua = { 'stylua' },
         python = { 'isort', 'black' },
+        tex = { 'tex-fmt' },
+        toml = { 'taplo' },
         -- Conform can also run multiple formatters sequentially
         -- python = { "isort", "black" },
         --
