@@ -1,70 +1,105 @@
+-- lua/custom/plugins/nvim-jdtls.lua
+
 return {
   'mfussenegger/nvim-jdtls',
-  ft = 'java',
+  ft = 'java', -- Load this plugin only for Java files
   dependencies = {
-    'mfussenegger/nvim-dap',
+    'neovim/nvim-lspconfig',
+    'williamboman/mason.nvim',
+    'williamboman/mason-lspconfig.nvim',
   },
   config = function()
     local jdtls = require 'jdtls'
 
-    -- Find root of project
-    local root_markers = { '.git', 'mvnw', 'gradlew', 'pom.xml', 'build.gradle' }
-    local root_dir = require('jdtls.setup').find_root(root_markers)
-    if root_dir == '' then
+    -- Function to get Mason install path for a package
+    local function get_mason_package_path(package_name)
+      local ok, mason_registry = pcall(require, 'mason-registry')
+      if not ok then
+        vim.notify('mason-registry not available', vim.log.levels.ERROR)
+        return nil
+      end
+
+      if not mason_registry.is_installed(package_name) then
+        vim.notify('Package ' .. package_name .. ' is not installed. Run :MasonInstall ' .. package_name, vim.log.levels.ERROR)
+        return nil
+      end
+
+      local package = mason_registry.get_package(package_name)
+      -- Try different possible methods for getting the install path
+      if package.get_install_path then
+        return package:get_install_path()
+      elseif package.get_installed_path then
+        return package:get_installed_path()
+      else
+        -- Fallback: construct path manually
+        local mason_path = vim.fn.stdpath('data') .. '/mason/packages/' .. package_name
+        if vim.fn.isdirectory(mason_path) == 1 then
+          return mason_path
+        else
+          vim.notify('Could not determine install path for ' .. package_name, vim.log.levels.ERROR)
+          return nil
+        end
+      end
+    end
+
+    -- Get Mason install paths
+    local jdtls_path = get_mason_package_path 'jdtls'
+    local java_debug_path = get_mason_package_path 'java-debug-adapter'
+    local java_test_path = get_mason_package_path 'java-test'
+
+    if not jdtls_path then
+      vim.notify('jdtls not found. Please install it via Mason: :MasonInstall jdtls', vim.log.levels.ERROR)
       return
     end
 
-    -- Path to Mason's jdtls installation
-    local mason_path = vim.fn.stdpath 'data' .. '/mason/packages/jdtls'
-    local launcher_jar = vim.fn.glob(mason_path .. '/plugins/org.eclipse.equinox.launcher_*.jar')
+    -- This is the location where jdtls will store its data and downloaded sources.
+    local data_dir = vim.fn.stdpath 'data' .. '/jdtls/' .. vim.fn.fnamemodify(vim.fn.getcwd(), ':p:h:t')
 
-    -- Check if jdtls is properly installed
-    if launcher_jar == '' then
-      vim.notify('jdtls not found. Please run :MasonInstall jdtls', vim.log.levels.WARN)
-      return
-    end
-
-    local extendedClientCapabilities = jdtls.extendedClientCapabilities
-    extendedClientCapabilities.resolveAdditionalTextEditsSupport = true
-
-    local project_name = vim.fn.fnamemodify(vim.fn.getcwd(), ':p:h:t')
-    local workspace_dir = vim.fn.stdpath 'data' .. '/site/java/workspace-root/' .. project_name
-    os.execute('mkdir -p ' .. workspace_dir)
-
-    -- Determine Java executable
-    local java_cmd = vim.fn.exepath 'java'
-    if java_cmd == '' then
-      vim.notify('Java not found in PATH', vim.log.levels.ERROR)
-      return
-    end
-
-    -- Find debug bundles
+    -- Bundles for debugging and testing (optional)
     local bundles = {}
-
-    -- Java Debug Server (com.microsoft.java.debug.plugin)
-    local java_debug_path = vim.fn.stdpath 'data' .. '/mason/packages/java-debug-adapter'
-    local java_debug_jar = vim.fn.glob(java_debug_path .. '/extension/server/com.microsoft.java.debug.plugin-*.jar')
-    if java_debug_jar ~= '' then
-      table.insert(bundles, java_debug_jar)
+    if java_debug_path then
+      local debug_jar = vim.fn.glob(java_debug_path .. '/extension/server/com.microsoft.java.debug.plugin-*.jar', true)
+      if debug_jar ~= '' then
+        table.insert(bundles, debug_jar)
+      end
     end
 
-    -- VSCode Java Test (vscode-java-test)
-    local java_test_path = vim.fn.stdpath 'data' .. '/mason/packages/java-test'
-    local java_test_jars = vim.fn.glob(java_test_path .. '/extension/server/*.jar', true, true)
-    for _, jar in ipairs(java_test_jars) do
-      table.insert(bundles, jar)
+    if java_test_path then
+      local test_jars = vim.split(vim.fn.glob(java_test_path .. '/extension/server/*.jar', true), '\n')
+      for _, jar in ipairs(test_jars) do
+        if jar ~= '' then
+          table.insert(bundles, jar)
+        end
+      end
     end
 
-    -- Main jdtls config
+    -- Find the launcher jar
+    local launcher_jar = vim.fn.glob(jdtls_path .. '/plugins/org.eclipse.equinox.launcher_*.jar')
+    if launcher_jar == '' then
+      vim.notify('Could not find Eclipse launcher jar in ' .. jdtls_path, vim.log.levels.ERROR)
+      return
+    end
+
+    -- Determine OS configuration directory
+    local os_config
+    if vim.fn.has 'mac' == 1 then
+      os_config = 'config_mac'
+    elseif vim.fn.has 'unix' == 1 then
+      os_config = 'config_linux'
+    else
+      os_config = 'config_win'
+    end
+
     local config = {
+      -- The command to start the language server
       cmd = {
-        java_cmd,
-        '-Declipse.application=org.eclipse.jdt.ls.core.id1',
+        'java',
+        '-Declipse.application=org.eclipse.jdt.ls.core.id1.JavaLanguageServerImpl',
         '-Dosgi.bundles.defaultStartLevel=4',
         '-Declipse.product=org.eclipse.jdt.ls.core.product',
         '-Dlog.protocol=true',
         '-Dlog.level=ALL',
-        '-Xmx1g',
+        '-Xms1g',
         '--add-modules=ALL-SYSTEM',
         '--add-opens',
         'java.base/java.util=ALL-UNNAMED',
@@ -73,105 +108,31 @@ return {
         '-jar',
         launcher_jar,
         '-configuration',
-        mason_path .. '/config_linux',
+        jdtls_path .. '/' .. os_config,
         '-data',
-        workspace_dir,
+        data_dir,
       },
-      root_dir = root_dir,
-      capabilities = require('blink.cmp').get_lsp_capabilities(),
-      settings = {
-        java = {
-          eclipse = {
-            downloadSources = true,
-          },
-          configuration = {
-            updateBuildConfiguration = 'interactive',
-          },
-          maven = {
-            downloadSources = true,
-          },
-          implementationsCodeLens = {
-            enabled = true,
-          },
-          referencesCodeLens = {
-            enabled = true,
-          },
-          references = {
-            includeDecompiledSources = true,
-          },
-          format = {
-            enabled = true,
-          },
-        },
-        signatureHelp = { enabled = true },
-        extendedClientCapabilities = extendedClientCapabilities,
-      },
+
+      -- This tells jdtls where to find the project root
+      root_dir = require('jdtls.setup').find_root { 'gradlew', 'mvnw', '.git', 'pom.xml', 'build.gradle' },
+
+      -- Pass the bundles to jdtls
       init_options = {
         bundles = bundles,
       },
-      on_attach = function(client, bufnr)
-        -- Setup nvim-dap for Java
-        require('jdtls').setup_dap { hotcodereplace = 'auto' }
-        require('jdtls.dap').setup_dap_main_class_configs()
 
-        -- Optional: Setup which-key mappings for Java-specific commands
-        local wk = require 'which-key'
-        wk.add {
-          { '<leader>j', group = '[J]ava', buffer = bufnr },
-          {
-            '<leader>jo',
-            function()
-              require('jdtls').organize_imports()
-            end,
-            desc = '[O]rganize Imports',
-            buffer = bufnr,
-          },
-          {
-            '<leader>jv',
-            function()
-              require('jdtls').extract_variable()
-            end,
-            desc = 'Extract [V]ariable',
-            buffer = bufnr,
-          },
-          {
-            '<leader>jc',
-            function()
-              require('jdtls').extract_constant()
-            end,
-            desc = 'Extract [C]onstant',
-            buffer = bufnr,
-          },
-          {
-            '<leader>jm',
-            function()
-              require('jdtls').extract_method(true)
-            end,
-            desc = 'Extract [M]ethod',
-            buffer = bufnr,
-          },
-          {
-            '<leader>jt',
-            function()
-              require('jdtls').test_nearest_method()
-            end,
-            desc = '[T]est Method',
-            buffer = bufnr,
-          },
-          {
-            '<leader>jT',
-            function()
-              require('jdtls').test_class()
-            end,
-            desc = '[T]est Class',
-            buffer = bufnr,
-          },
-        }
+      -- Here you could add the on_attach function if needed
+      on_attach = function(client, bufnr)
+        -- Standard LSP keymaps are handled by the main LSP config
+        -- Add any jdtls-specific keymaps here if needed
+        jdtls.setup_dap { hotcodereplace = 'auto' }
       end,
+
+      -- Capabilities from blink.cmp
+      capabilities = require('blink.cmp').get_lsp_capabilities(),
     }
 
-    -- Start jdtls
-    require('jdtls').start_or_attach(config)
+    -- Start the language server
+    jdtls.start_or_attach(config)
   end,
 }
-
