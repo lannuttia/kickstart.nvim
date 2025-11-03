@@ -90,28 +90,44 @@ return {
       os_config = 'config_win'
     end
 
+    -- Check for Lombok jar
+    local lombok_jar = jdtls_path .. '/lombok.jar'
+    local lombok_exists = vim.fn.filereadable(lombok_jar) == 1
+
+    -- Build the command with Lombok support
+    local cmd = {
+      'java',
+      '-Declipse.application=org.eclipse.jdt.ls.core.id1',
+      '-Dosgi.bundles.defaultStartLevel=4',
+      '-Declipse.product=org.eclipse.jdt.ls.core.product',
+      '-Dlog.protocol=true',
+      '-Dlog.level=ALL',
+      '-Xms1g',
+      '--add-modules=ALL-SYSTEM',
+      '--add-opens',
+      'java.base/java.util=ALL-UNNAMED',
+      '--add-opens',
+      'java.base/java.lang=ALL-UNNAMED',
+    }
+
+    -- Add Lombok agent if available
+    if lombok_exists then
+      table.insert(cmd, '-javaagent:' .. lombok_jar)
+    end
+
+    -- Add the jar and configuration
+    vim.list_extend(cmd, {
+      '-jar',
+      launcher_jar,
+      '-configuration',
+      jdtls_path .. '/' .. os_config,
+      '-data',
+      data_dir,
+    })
+
     local config = {
       -- The command to start the language server
-      cmd = {
-        'java',
-        '-Declipse.application=org.eclipse.jdt.ls.core.id1',
-        '-Dosgi.bundles.defaultStartLevel=4',
-        '-Declipse.product=org.eclipse.jdt.ls.core.product',
-        '-Dlog.protocol=true',
-        '-Dlog.level=ALL',
-        '-Xms1g',
-        '--add-modules=ALL-SYSTEM',
-        '--add-opens',
-        'java.base/java.util=ALL-UNNAMED',
-        '--add-opens',
-        'java.base/java.lang=ALL-UNNAMED',
-        '-jar',
-        launcher_jar,
-        '-configuration',
-        jdtls_path .. '/' .. os_config,
-        '-data',
-        data_dir,
-      },
+      cmd = cmd,
 
       -- This tells jdtls where to find the project root
       root_dir = require('jdtls.setup').find_root { 'gradlew', 'mvnw', '.git', 'pom.xml', 'build.gradle' },
