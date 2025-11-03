@@ -94,7 +94,7 @@ return {
       -- The command to start the language server
       cmd = {
         'java',
-        '-Declipse.application=org.eclipse.jdt.ls.core.id1.JavaLanguageServerImpl',
+        '-Declipse.application=org.eclipse.jdt.ls.core.id1',
         '-Dosgi.bundles.defaultStartLevel=4',
         '-Declipse.product=org.eclipse.jdt.ls.core.product',
         '-Dlog.protocol=true',
