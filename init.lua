@@ -690,6 +690,15 @@ require('lazy').setup({
         -- ts_ls = {},
         --
 
+        lemminx = {
+          settings = {
+            xml = {
+              catalogs = {
+                '/etc/xml/catalog',
+              },
+            },
+          },
+        },
         ltex = {
           filetypes = { 'tex' },
           settings = {
