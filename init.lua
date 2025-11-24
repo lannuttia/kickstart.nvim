@@ -346,6 +346,7 @@ require('lazy').setup({
       spec = {
         { '<leader>s', group = '[S]earch' },
         { '<leader>t', group = '[T]oggle' },
+        { '<leader>c', group = '[C]reate' },
         { '<leader>h', group = 'Git [H]unk', mode = { 'n', 'v' } },
       },
     },
@@ -783,6 +784,7 @@ require('lazy').setup({
         'java-debug-adapter', -- Java Debug Adapter
         'java-test', -- Java Test Runner
         'lemminx',
+        'xmlformatter',
       })
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
@@ -838,11 +840,7 @@ require('lazy').setup({
         tex = { 'tex-fmt' },
         toml = { 'taplo' },
 
-        -- Java: Use Maven Spotless for perfect consistency
-        java = { 'spotless_maven' },
-
-        -- XML: Use Spotless in Maven projects, xmllint elsewhere
-        xml = { 'spotless_maven' },
+        xml = { 'xmlformatter' },
 
         -- JSON: Use jq (already installed on your system)
         json = { 'jq' },
@@ -854,44 +852,6 @@ require('lazy').setup({
         --
         -- You can use 'stop_after_first' to run the first available formatter from the list
         -- javascript = { "prettierd", "prettier", stop_after_first = true },
-      },
-
-      -- Increase timeout for Maven operations
-      formatters = {
-        spotless_maven = {
-          timeout_ms = 5000, -- Maven needs more time than standalone formatters
-          -- Use system mvn instead of ./mvnw when pom.xml exists
-          command = function(self, ctx)
-            -- Check if mvnw exists in the project root
-            local mvnw_path = vim.fn.findfile('mvnw', vim.fn.fnamemodify(ctx.filename, ':p:h') .. ';')
-            if mvnw_path ~= '' then
-              return './mvnw'
-            end
-
-            -- Check if pom.xml exists in the project root
-            local pom_path = vim.fn.findfile('pom.xml', vim.fn.fnamemodify(ctx.filename, ':p:h') .. ';')
-            if pom_path ~= '' then
-              return 'mvn'
-            end
-
-            -- Fallback to mvn if neither is found
-            return 'mvn'
-          end,
-          -- Set working directory to the directory containing pom.xml or mvnw
-          cwd = function(self, ctx)
-            local mvnw_path = vim.fn.findfile('mvnw', vim.fn.fnamemodify(ctx.filename, ':p:h') .. ';')
-            if mvnw_path ~= '' then
-              return vim.fn.fnamemodify(mvnw_path, ':p:h')
-            end
-
-            local pom_path = vim.fn.findfile('pom.xml', vim.fn.fnamemodify(ctx.filename, ':p:h') .. ';')
-            if pom_path ~= '' then
-              return vim.fn.fnamemodify(pom_path, ':p:h')
-            end
-
-            return vim.fn.getcwd()
-          end,
-        },
       },
     },
   },

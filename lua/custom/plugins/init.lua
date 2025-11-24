@@ -8,6 +8,6 @@ return {
   require 'custom.plugins.undotree',
   require 'custom.plugins.latex-live-preview',
   require 'custom.plugins.markdown-preview',
-  require 'custom.plugins.nvim-jdtls',
   require 'custom.plugins.plantuml',
+  require 'custom.plugins.nvim-jdtls',
 }
