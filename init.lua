@@ -747,6 +747,9 @@ require('lazy').setup({
                 enable = false,
                 url = '',
               },
+              format = {
+                enable = false,
+              },
               hover = true,
               completion = true,
               schemas = require('schemastore').yaml.schemas(),
