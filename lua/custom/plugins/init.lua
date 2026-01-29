@@ -5,5 +5,4 @@
 return {
   require 'custom.plugins.emoji',
   require 'custom.plugins.undotree',
-  require 'custom.plugins.nvim-jdtls',
 }
