@@ -5,6 +5,5 @@
 return {
   require 'custom.plugins.emoji',
   require 'custom.plugins.undotree',
-  require 'custom.plugins.latex-live-preview',
   require 'custom.plugins.nvim-jdtls',
 }
