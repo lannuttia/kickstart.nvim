@@ -683,6 +683,11 @@ require('lazy').setup({
             validate = { enable = true },
           },
         },
+        jdtls = {
+          settings = {
+            java = {},
+          },
+        },
       }
 
       -- Ensure the servers and tools above are installed
