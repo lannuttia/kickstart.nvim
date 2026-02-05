@@ -8,4 +8,5 @@ return {
   require 'custom.plugins.jdtls',
   require 'custom.plugins.maven',
   require 'custom.plugins.neogit',
+  require 'custom.plugins.claudecode',
 }
