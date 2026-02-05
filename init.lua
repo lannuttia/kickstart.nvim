@@ -312,8 +312,10 @@ require('lazy').setup({
       spec = {
         { '<leader>s', group = '[S]earch', mode = { 'n', 'v' } },
         { '<leader>t', group = '[T]oggle' },
+        { '<leader>T', group = '[T]est' },
         { '<leader>c', group = '[C]reate' },
         { '<leader>h', group = 'Git [H]unk', mode = { 'n', 'v' } },
+        { 'gr', group = '[G]oto/[R]efactor', mode = { 'n', 'v' } },
       },
     },
   },
@@ -618,6 +620,10 @@ require('lazy').setup({
               catalogs = {
                 '/etc/xml/catalog',
               },
+              format = {
+                enabled = true,
+                indentSize = 4,
+              },
             },
           },
         },
@@ -683,11 +689,6 @@ require('lazy').setup({
             validate = { enable = true },
           },
         },
-        jdtls = {
-          settings = {
-            java = {},
-          },
-        },
       }
 
       -- Ensure the servers and tools above are installed
@@ -708,7 +709,7 @@ require('lazy').setup({
         'java-debug-adapter', -- Java Debug Adapter
         'java-test', -- Java Test Runner
         'lemminx',
-        'xmlformatter',
+        'markdownlint-cli2',
         -- You can add other tools here that you want Mason to install
       })
 
@@ -782,8 +783,6 @@ require('lazy').setup({
         python = { 'isort', 'black' },
         tex = { 'tex-fmt' },
         toml = { 'taplo' },
-
-        xml = { 'xmlformatter' },
 
         -- JSON: Use jq (already installed on your system)
         json = { 'jq' },

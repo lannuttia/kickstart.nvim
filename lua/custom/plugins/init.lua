@@ -5,4 +5,6 @@
 return {
   require 'custom.plugins.emoji',
   require 'custom.plugins.undotree',
+  require 'custom.plugins.jdtls',
+  require 'custom.plugins.maven',
 }
