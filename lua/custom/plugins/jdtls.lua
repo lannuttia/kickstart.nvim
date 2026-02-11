@@ -51,10 +51,10 @@ return {
         local debug_jar = vim.fn.glob(vim.fn.stdpath 'data' .. '/mason/packages/java-debug-adapter/extension/server/com.microsoft.java.debug.plugin-*.jar', true)
         if debug_jar ~= '' then table.insert(bundles, debug_jar) end
 
-        -- Add java-test plugin (only the core OSGi bundle)
-        local test_plugin = vim.fn.glob(vim.fn.stdpath 'data' .. '/mason/packages/java-test/extension/server/com.microsoft.java.test.plugin-*.jar', true)
-        if test_plugin ~= '' then
-          table.insert(bundles, test_plugin)
+        -- Add java-test plugin (all JARs required for test resolution)
+        local java_test_jars = vim.fn.glob(vim.fn.stdpath 'data' .. '/mason/packages/java-test/extension/server/*.jar', true)
+        if java_test_jars ~= '' then
+          vim.list_extend(bundles, vim.split(java_test_jars, '\n'))
         end
 
         -- Get lombok javaagent from environment variable if available
