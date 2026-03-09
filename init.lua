@@ -316,6 +316,7 @@ require('lazy').setup({
         { '<leader>T', group = '[T]est' },
         { '<leader>c', group = '[C]reate' },
         { '<leader>h', group = 'Git [H]unk', mode = { 'n', 'v' } },
+        { '<leader>m', group = '[M]arkdown' },
         { 'gr', group = '[G]oto/[R]efactor', mode = { 'n', 'v' } },
       },
     },
